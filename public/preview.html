@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Damayan Login Preview</title>
+  <style>
+    :root {
+      --primary: #ffc300;
+      --primary-dark: #b58a00;
+      --social-bg: #faf6eb;
+      --border: #a9a9a9;
+      --danger: #ff4444;
+      --text: #111111;
+      --canvas: #f3efe3;
+      --card-shadow: 0 20px 60px rgba(0, 0, 0, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 195, 0, 0.22), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255, 195, 0, 0.18), transparent 32%),
+        linear-gradient(135deg, #fcfbf6 0%, #f1ead8 100%);
+      color: var(--text);
+    }
+
+    .shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    .header {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 195, 0, 0.18);
+      color: #765800;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 14px 0 8px;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1;
+    }
+
+    .sub {
+      margin: 0;
+      max-width: 760px;
+      color: #4f4b40;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(640px, 1.25fr) minmax(320px, 0.85fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+    }
+
+    .panel-head {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px 0;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #6b6555;
+    }
+
+    .desktop-stage {
+      position: relative;
+      min-height: 860px;
+      padding: 22px;
+      background: #ffffff;
+      isolation: isolate;
+    }
+
+    .blob {
+      position: absolute;
+      background: var(--primary);
+      border-radius: 999px;
+      z-index: 0;
+    }
+
+    .desktop-stage .blob.top {
+      width: 1280px;
+      height: 560px;
+      top: -360px;
+      left: -220px;
+    }
+
+    .desktop-stage .blob.bottom {
+      width: 1280px;
+      height: 560px;
+      bottom: -310px;
+      left: -220px;
+    }
+
+    .desktop-center {
+      position: relative;
+      z-index: 1;
+      min-height: 816px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .desktop-card-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo-ring {
+      position: absolute;
+      top: -8px;
+      width: 140px;
+      height: 140px;
+      border-radius: 999px;
+      background: var(--primary);
+      z-index: 1;
+    }
+
+    .logo-mark {
+      position: relative;
+      z-index: 2;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: linear-gradient(145deg, #fff7d1, #f8d14c);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+      margin-bottom: -60px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #856400;
+    }
+
+    .desktop-card {
+      width: 505px;
+      padding: 84px 60px 36px;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 4px 20px 4px rgba(0, 0, 0, 0.15);
+      text-align: center;
+    }
+
+    .welcome {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .brand {
+      margin: 0;
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .title {
+      margin: 6px 0 20px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .field {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .input,
+    .password-box {
+      width: 100%;
+      height: 43px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 0 16px;
+      font-size: 13px;
+      background: transparent;
+    }
+
+    .password-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ghost {
+      color: #8e8e8e;
+    }
+
+    .eye {
+      font-size: 16px;
+    }
+
+    .forgot {
+      display: block;
+      margin: 0 0 16px;
+      text-align: left;
+      color: var(--primary-dark);
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .login-btn {
+      width: 180px;
+      height: 40px;
+      border: 0;
+      border-radius: 15px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: default;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 80%;
+      margin: 18px auto 12px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .divider span {
+      font-size: 13px;
+    }
+
+    .socials {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .social {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      border: 1px solid var(--primary);
+      background: var(--social-bg);
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .social.apple {
+      font-size: 20px;
+    }
+
+    .signup {
+      margin: 18px 0 0;
+      font-size: 11px;
+    }
+
+    .signup strong {
+      color: var(--primary-dark);
+    }
+
+    .mobile-panel {
+      padding: 22px 22px 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.74));
+    }
+
+    .phone {
+      position: relative;
+      overflow: hidden;
+      width: min(100%, 360px);
+      margin: 12px auto 0;
+      border: 12px solid #1a1a1a;
+      border-radius: 42px;
+      background: #fff;
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+      aspect-ratio: 9 / 19.5;
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 24px;
+      border-radius: 999px;
+      background: #1a1a1a;
+      z-index: 4;
+    }
+
+    .phone-screen {
+      position: relative;
+      height: 100%;
+      padding: 36px 20px 24px;
+      background: #fff;
+    }
+
+    .phone-screen .blob.top {
+      width: 522px;
+      height: 328px;
+      top: -10px;
+      left: -55px;
+    }
+
+    .phone-screen .blob.bottom {
+      width: 522px;
+      height: 328px;
+      bottom: -120px;
+      left: -64px;
+    }
+
+    .mobile-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+
+    .mobile-logo {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin-top: 18px;
+    }
+
+    .mobile-logo .ring {
+      position: absolute;
+      inset: -8px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    .mobile-logo .mark {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: linear-gradient(145deg, #fff7d1, #f8d14c);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #856400;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .mobile-card {
+      width: 100%;
+      margin-top: 34px;
+      background: #fff;
+      border-radius: 25px;
+      padding: 70px 24px 32px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .mobile-card .welcome {
+      font-size: 16px;
+    }
+
+    .mobile-card .brand {
+      font-size: 48px;
+    }
+
+    .mobile-card .title {
+      margin-bottom: 20px;
+    }
+
+    .mobile-card .login-btn {
+      width: 131px;
+    }
+
+    .mobile-card .divider {
+      margin-top: 16px;
+    }
+
+    .mobile-signup {
+      margin-top: 18px;
+      font-size: 11px;
+    }
+
+    .mobile-signup strong {
+      color: var(--primary-dark);
+    }
+
+    @media (max-width: 1180px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .desktop-stage {
+        min-height: 760px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        padding: 20px 14px 34px;
+      }
+
+      .desktop-stage {
+        min-height: 680px;
+        padding: 14px;
+      }
+
+      .desktop-card {
+        width: min(100%, 505px);
+        padding: 76px 24px 28px;
+      }
+
+      .brand {
+        font-size: 44px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="header">
+      <span class="eyebrow">Local Preview</span>
+      <h1>Damayan login screens</h1>
+      <p class="sub">This page reproduces the current desktop and mobile login UI from the standalone component files so you can review the look without wiring a full Next.js or React Native app first.</p>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Web login</h2>
+          <span class="note">Based on <code>LoginPage.tsx</code></span>
+        </div>
+        <div class="desktop-stage">
+          <div class="blob top" aria-hidden="true"></div>
+          <div class="blob bottom" aria-hidden="true"></div>
+          <div class="desktop-center">
+            <div class="desktop-card-wrap">
+              <div class="logo-ring" aria-hidden="true"></div>
+              <div class="logo-mark" aria-hidden="true">D</div>
+              <section class="desktop-card">
+                <p class="welcome">Welcome to</p>
+                <h3 class="brand">DAMAYAN</h3>
+                <p class="title">LOGIN</p>
+
+                <div class="field">
+                  <div class="input ghost">Email</div>
+                </div>
+                <div class="field">
+                  <div class="password-box">
+                    <span class="ghost">Password</span>
+                    <span class="eye" aria-hidden="true">👁</span>
+                  </div>
+                </div>
+
+                <a class="forgot" href="#">Forgot Password?</a>
+                <button class="login-btn" type="button">Login</button>
+
+                <div class="divider"><span>OR</span></div>
+
+                <div class="socials" aria-label="Social login options">
+                  <div class="social" aria-hidden="true" style="color:#ea4335">G</div>
+                  <div class="social apple" aria-hidden="true"></div>
+                  <div class="social" aria-hidden="true" style="color:#4285f4">f</div>
+                </div>
+
+                <p class="signup">Don't have an account? <strong>Sign Up</strong></p>
+              </section>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel mobile-panel">
+        <div class="panel-head">
+          <h2>Mobile login</h2>
+          <span class="note">Based on <code>LoginScreen.tsx</code></span>
+        </div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="blob top" aria-hidden="true"></div>
+            <div class="blob bottom" aria-hidden="true"></div>
+            <div class="mobile-content">
+              <div class="mobile-logo">
+                <div class="ring" aria-hidden="true"></div>
+                <div class="mark" aria-hidden="true">D</div>
+              </div>
+
+              <section class="mobile-card">
+                <p class="welcome">Welcome to</p>
+                <h3 class="brand">DAMAYAN</h3>
+                <p class="title">LOGIN</p>
+
+                <div class="field">
+                  <div class="input ghost">Email</div>
+                </div>
+                <div class="field">
+                  <div class="password-box">
+                    <span class="ghost">Password</span>
+                    <span class="eye" aria-hidden="true">👁</span>
+                  </div>
+                </div>
+
+                <a class="forgot" href="#">Forgot Password?</a>
+                <button class="login-btn" type="button">Login</button>
+
+                <div class="divider"><span>OR</span></div>
+
+                <div class="socials" aria-label="Social login options">
+                  <div class="social" aria-hidden="true" style="color:#ea4335">G</div>
+                  <div class="social apple" aria-hidden="true"></div>
+                  <div class="social" aria-hidden="true" style="color:#4285f4">f</div>
+                </div>
+              </section>
+
+              <p class="mobile-signup">Don't have an account? <strong>Sign Up</strong></p>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
