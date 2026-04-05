@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, useMemo, useRef, useState } from "react";
 import styles from "./forgot-password-flow.module.css";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+
 type Step = "request" | "otp" | "reset" | "success";
 
 export function ForgotPasswordForm() {
@@ -19,18 +21,42 @@ export function ForgotPasswordForm() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const joinedOtp = useMemo(() => otp.join(""), [otp]);
 
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     setError(null);
 
     if (!identifier.trim()) {
-      setError("Phone number or email is required.");
+      setError("Email is required.");
       return;
     }
 
-    setStep("otp");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: identifier.trim() }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Something went wrong.");
+      }
+
+      setStep("otp");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to send code.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOtpChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
@@ -44,6 +70,7 @@ export function ForgotPasswordForm() {
     }
   };
 
+  // OTP is mocked — any 6 digits pass
   const handleVerifyOtp = () => {
     setError(null);
 
@@ -55,7 +82,7 @@ export function ForgotPasswordForm() {
     setStep("reset");
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     setError(null);
 
     if (newPassword.length < 6) {
@@ -68,7 +95,25 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    setStep("success");
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: identifier.trim(), newPassword }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to reset password.");
+      }
+
+      setStep("success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to reset password.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (step === "success") {
@@ -182,14 +227,15 @@ export function ForgotPasswordForm() {
                         className={`${styles.input} ${error ? styles.inputError : ""}`}
                         value={identifier}
                         onChange={(event) => setIdentifier(event.target.value)}
-                        placeholder="Phone Number or Email"
+                        placeholder="Email"
+                        type="email"
                       />
                     </div>
 
                     {error ? <div className={styles.error}><span>{error}</span></div> : null}
 
-                    <button className={styles.button} type="button" onClick={handleSendCode}>
-                      Send Code
+                    <button className={styles.button} type="button" onClick={handleSendCode} disabled={isLoading}>
+                      {isLoading ? "Sending…" : "Send Code"}
                     </button>
 
                     <div className={styles.socialWrap}>
@@ -298,8 +344,8 @@ export function ForgotPasswordForm() {
 
                     {error ? <div className={styles.error}><span>{error}</span></div> : null}
 
-                    <button className={styles.button} type="button" onClick={handleResetPassword}>
-                      Reset Password
+                    <button className={styles.button} type="button" onClick={handleResetPassword} disabled={isLoading}>
+                      {isLoading ? "Resetting…" : "Reset Password"}
                     </button>
                   </>
                 ) : null}

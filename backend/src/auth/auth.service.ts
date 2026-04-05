@@ -8,6 +8,8 @@ import {
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { createClient } from '@supabase/supabase-js';
 
 /**
@@ -48,7 +50,7 @@ export class AuthService {
       await client.auth.admin.createUser({
         email: dto.email,
         password: dto.password,
-        email_confirm: false, // user must confirm via email
+        email_confirm: true, // auto-confirm; identity is verified by admin via is_verified flag
       });
 
     if (authError) {
@@ -153,6 +155,11 @@ export class AuthService {
     });
 
     if (error) {
+      this.logger.warn(`Login failed for ${dto.email}: ${error.message}`);
+      // Surface specific Supabase errors so the client knows what to fix
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        throw new UnauthorizedException('Email not confirmed. Please check your inbox and confirm your account.');
+      }
       throw new UnauthorizedException('Invalid email or password.');
     }
 
@@ -191,6 +198,63 @@ export class AuthService {
     }
 
     return data;
+  }
+
+  // ───────────────────── FORGOT PASSWORD ─────────────────────
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    // Validate that the email belongs to a known user via admin API.
+    // We always return a generic success message to prevent email enumeration.
+    const { data, error } = await this.supabase
+      .getClient()
+      .auth.admin.listUsers();
+
+    if (error) {
+      this.logger.error(`listUsers failed: ${error.message}`);
+      throw new InternalServerErrorException('Could not process request.');
+    }
+
+    const user = data.users.find((u) => u.email === dto.email);
+
+    if (user) {
+      this.logger.log(`Forgot-password requested for known user: ${dto.email}`);
+    } else {
+      this.logger.warn(`Forgot-password requested for unknown email: ${dto.email}`);
+    }
+
+    // Return generic message regardless — OTP is mocked on the frontend for now
+    return { message: 'If that email is registered, a code has been sent.' };
+  }
+
+  // ───────────────────── RESET PASSWORD ─────────────────────
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const { data, error } = await this.supabase
+      .getClient()
+      .auth.admin.listUsers();
+
+    if (error) {
+      this.logger.error(`listUsers failed: ${error.message}`);
+      throw new InternalServerErrorException('Could not process request.');
+    }
+
+    const user = data.users.find((u) => u.email === dto.email);
+
+    if (!user) {
+      throw new BadRequestException('No account found with that email.');
+    }
+
+    const { error: updateError } = await this.supabase
+      .getClient()
+      .auth.admin.updateUserById(user.id, { password: dto.newPassword });
+
+    if (updateError) {
+      this.logger.error(`Password update failed: ${updateError.message}`);
+      throw new InternalServerErrorException('Failed to reset password.');
+    }
+
+    this.logger.log(`Password reset successfully for ${dto.email}`);
+    return { message: 'Password has been reset successfully.' };
   }
 
   // ───────────────────── ROLLBACK HELPERS ─────────────────────

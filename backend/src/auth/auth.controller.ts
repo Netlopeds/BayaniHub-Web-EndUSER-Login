@@ -13,6 +13,8 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
 import { FileValidationPipe } from '../common/pipes/file-validation.pipe';
 
@@ -64,5 +66,27 @@ export class AuthController {
   async getProfile(@Req() req: Request) {
     const user = (req as any).user;
     return this.authService.getProfile(user.id);
+  }
+
+  /**
+   * POST /api/v1/auth/forgot-password
+   *
+   * Accepts { email }. Validates the email and returns a generic
+   * success message. OTP is mocked on the frontend for now.
+   */
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  /**
+   * POST /api/v1/auth/reset-password
+   *
+   * Accepts { email, newPassword }. Uses the admin API to update
+   * the user's password directly in Supabase Auth.
+   */
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 }
